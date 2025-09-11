@@ -1,7 +1,9 @@
+//git add . - git commit -m "algo" - git push
+
 function setup() {
-  createCanvas(400, 400);
+  createCanvas(windowWidth,windowHeight);
 }
 
 function draw() {
-  background(220);
+  background(150);
 }
