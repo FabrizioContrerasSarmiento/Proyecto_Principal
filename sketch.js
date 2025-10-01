@@ -10,12 +10,15 @@ let paused = false;
 let teclas_velocidad = 1;      // escala de velocidad global (teclas ↑/↓)
 let fishSpeedFromMic = 1; // escala desde mic
 let tamaño_burbuja = 1;      // escala de tamaño de burbuja desde mic
-
+let mostrarAyuda = false;  // H para mostrar/ocultar
 let contador_burbujas = 0; // contador de burbujas explotadas
+let alga;
+let algas = [];
 
 function preload() { // cargo los archivos
   musica = loadSound('ambiente_agua.mp3');
   popSnd = loadSound('pop.mp3');
+  alga = loadImage("alga.png");
 }
 
 function setup() {
@@ -32,11 +35,20 @@ function setup() {
   });
 
   fft = new p5.FFT(0.8, 64); // analiza el sonido
+
+  for (let i = 0; i < 8; i++) {
+    algas.push({
+      xBase: (i + 1) * (width / 9), // 8 columnas distribuidas
+      fase: random(TWO_PI),         // para que no se muevan todas iguales
+      amp: random(5, 15)            // amplitud distinta del vaivén
+    });
+  }
 }
 
 // === Loop ===
 function draw() {
   drawWater(); // Llama a la función que dibuja el agua animada
+  drawAlga(); 
 
   // burbujas
   for (let b of bubbles) { // recorre el array de burbujas
@@ -65,6 +77,59 @@ function draw() {
   textSize(24);
   textAlign(LEFT, TOP);
   text("Burbujas explotadas: " + contador_burbujas, 20, 20);
+  pop();
+
+  if (mostrarAyuda) {
+    dibujarHUD();
+  }
+
+  if (!mostrarAyuda) {
+    push();
+    fill(200);
+    textSize(20);
+    textAlign(LEFT, TOP);
+    text("Presioná H para abrir el panel", 20, 50);
+    pop();
+  }
+}
+
+function dibujarHUD() {
+  const pad = 14;
+  const x = 16, y = 60;      
+  const ancho = 200, alto = 170;
+
+  push();
+  // panel
+  noStroke();
+  fill(0, 0, 0, 180);              
+  rect(x, y, ancho, alto, 12);     
+
+  // título
+  fill(255);
+  textAlign(LEFT, TOP);
+  textSize(18);
+  text("Controles (teclas)", x + pad, y + pad);
+
+  // línea fina separadora
+  stroke(255, 80);
+  strokeWeight(1);
+  line(x + pad, y + pad + 24, x + ancho - pad, y + pad + 24);
+
+  // texto de ayuda
+  noStroke();
+  textSize(14);
+  const col1 = x + pad;
+  const col2 = x + 175;
+
+  let r = y + pad + 34;  // fila inicial
+
+  // columna izquierda
+  text("Espacio: Música play/pause", col1, r); r += 20;
+  text("M: Micrófono on/off",        col1, r); r += 20;
+  text("B: Ráfaga de burbujas",      col1, r); r += 20;
+  text("P: Pausar/continuar",        col1, r); r += 20;
+  text("S: Captura de pantalla",     col1, r); r += 20;
+
   pop();
 }
 
@@ -129,12 +194,12 @@ class Bubble { // define cómo son y cómo se comportan las burbujas
     const s = this.s * tamaño_burbuja;   
     strokeWeight(2);
     stroke(180, 85, 60, 0.5);
-    fill(180, 85, 90, 0.3);
+    fill(180, 85, 90, 0.6);
     ellipse(this.x, this.y, this.s, this.s);
 
     noFill();
     strokeWeight(10);
-    stroke(180, 0, 100, 0.7);
+    stroke(180, 0, 100, 1);
     arc(this.x, this.y, this.s - 20, this.s - 20, PI + QUARTER_PI, PI + HALF_PI);
     pop();
   }
@@ -226,6 +291,9 @@ function keyPressed(){ // se ejecuta automáticamente cada vez que presionás un
   else if (key === 's') {            // S: screenshot de la pantalla
     saveCanvas('acuario', 'png');
   }
+  else if (key === 'h' || key === 'H') { // H : mostrar ayuda para ver los controles
+  mostrarAyuda = !mostrarAyuda;
+  }
 }
 
 function mousePressed(){ // al hacer click en una de las burbujas explota
@@ -248,6 +316,18 @@ function toggleMic(){ // interruptor para encender o apagar el micrófono q se p
   } else { // si ya estaba activo 
     if (mic) mic.stop(); // lo apaga
     useMic = false; 
+  }
+}
+
+function drawAlga() {
+  imageMode(CENTER);
+  for (let a of algas) {
+    let sway = sin(frameCount * 0.03 + a.fase) * a.amp; // movimiento horizontal ondulatorio
+    let x = a.xBase + sway; // posición en el suelo (todas igual en Y)
+    let y = height - alga.height * 1.2 * 0.5; // mismo nivel para todas
+
+    // todas con misma escala
+    image(alga, x, y, alga.width * 0.8, alga.height * 1.4);
   }
 }
 
