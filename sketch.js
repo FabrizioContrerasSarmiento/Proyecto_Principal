@@ -34,7 +34,6 @@ function setup() {
     musica.setVolume(0.15);
   });
 
-  fft = new p5.FFT(0.8, 64); // analiza el sonido
 
   for (let i = 0; i < 8; i++) {
     algas.push({
@@ -43,6 +42,8 @@ function setup() {
       amp: random(5, 15)            // amplitud distinta del vaivén
     });
   }
+
+  fft = new p5.FFT(0.8, 64); // analiza el sonido
 }
 
 // === Loop ===
@@ -65,8 +66,8 @@ function draw() {
 
   if (useMic && mic) { // si el microfono esta encendido
     const level = mic.getLevel(); // mide el volumen captado.
-    fishSpeedFromMic = map(level, 0, 0.20, 0.9, 3.5, true); // esto hace q los peces nadan más rápido cuando hablás fuerte.
-    tamaño_burbuja      = map(level, 0, 0.20, 0.9, 0.1, true); // esto hace q las burbujas se achican cuanto más fuerte hables.
+    fishSpeedFromMic = map(level, 0, 0.03, 1,8, true); // esto hace q los peces nadan más rápido cuando hablás fuerte.
+    tamaño_burbuja = map(level, 0, 0.20, 1, 0.25, true); // esto hace q las burbujas se achican cuanto más fuerte hables.
   } else {
     fishSpeedFromMic = 1;
     tamaño_burbuja = 1;
